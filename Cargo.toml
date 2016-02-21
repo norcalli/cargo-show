@@ -1,0 +1,7 @@
+[package]
+authors = ["Greg Guthe <greg.guthe@gmail.com>"]
+name = "cargo-show"
+version = "0.1.0"
+
+[dependencies]
+docopt = "0.6.78"
