@@ -1,7 +1,23 @@
 [package]
 authors = ["Greg Guthe <greg.guthe@gmail.com>"]
+keywords = ["cargo", "cargo-subcommand", "cli", "dependencies", "crates"]
+license = "Apache-2.0/MIT"
 name = "cargo-show"
+readme = "README.md"
 version = "0.1.0"
+
+[[bin]]
+name = "cargo-show"
+path = "src/main.rs"
 
 [dependencies]
 docopt = "0.6.78"
+rustc-serialize = "0.3.18"
+
+[dependencies.cargo]
+optional = false
+path = "cargo/"
+
+[dependencies.crates-io]
+optional = false
+path = "cargo/src/crates-io/"
