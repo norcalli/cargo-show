@@ -1,3 +1,0 @@
-[submodule "cargo"]
-	path = cargo
-	url = https://github.com/g-k/cargo.git
