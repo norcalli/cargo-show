@@ -27,7 +27,7 @@ $
 
 Usage:
 
-```sh
+```
 $ cargo show --help
 Usage:
     cargo show [options] <crate-name>...
@@ -41,7 +41,11 @@ Options:
     --version               Show version.
 
 Display a metadata for a create at crates.io.
+```
 
+To print package metadata:
+
+```
 $ cargo show webrender servo
 Error fetching data for webrender: cannot find crate
 ---
@@ -56,8 +60,11 @@ downloads: 336
 license: MPL-2.0
 created: 2014-12-04T23:41:05Z
 updated: 2015-12-11T23:55:55Z
+```
 
-$ # Dump raw JSON
+To print JSON:
+
+``` 
 $ cargo show --json serde | cut -b '1-120'
 {"crate":{"created_at":"2014-12-05T20:20:39Z","description":"A generic serialization/deserialization framework","documen
 ```
