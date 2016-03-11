@@ -13,7 +13,18 @@ extern crate rustc_serialize;
 
 use std::fmt;
 use std::process;
+use std::io::Write;
 use rustc_serialize::json;
+
+// from: http://stackoverflow.com/a/27590832
+macro_rules! println_stderr(
+    ($($arg:tt)*) => (
+        match writeln!(&mut ::std::io::stderr(), $($arg)* ) {
+            Ok(_) => {},
+            Err(x) => panic!("Unable to write to stderr: {}", x),
+        }
+    )
+);
 
 static DEFAULT: &'static str = "https://crates.io/";
 
@@ -113,12 +124,12 @@ fn print_crate_metadata(crate_name: &str, token: &str, as_json: bool) {
                     // the entire object was decoded so encoding a part of it should be fine
                     json::encode(crate_json).ok()
                 } else {
-                    println!("No 'crate' field found in JSON data for {}.", crate_name);
+                    println_stderr!("No 'crate' field found in JSON data for {}.", crate_name);
                     None
                 }
             }
             Err(e) => {
-                println!("Error parsing JSON data for {}: {}", crate_name, e);
+                println_stderr!("Error parsing JSON data for {}: {}", crate_name, e);
                 None
             }
         }
@@ -141,7 +152,7 @@ fn print_crate_metadata(crate_name: &str, token: &str, as_json: bool) {
         }
         Err(e) => {
             // e.g. crate name not found
-            println!("Error fetching data for {}: {}", crate_name, e);
+            println_stderr!("Error fetching data for {}: {}", crate_name, e);
         }
     }
 }
@@ -153,18 +164,18 @@ fn get_default_api_token() -> Option<String> {
             match config.get_string("registry.token") {
                 Ok(Some(token)) => Some(token.val),
                 Err(e) => {
-                    println!("Error reading token from cargo config: {}", e);
+                    println_stderr!("Error reading token from cargo config: {}", e);
                     None
                 }
                 Ok(None) => {
-                    println!("No token found in cargo config. Please run cargo login or use the \
-                              --token flag.");
+                    println_stderr!("No token found in cargo config. Please run cargo login or \
+                                     use the --token flag.");
                     None
                 }
             }
         }
         Err(e) => {
-            println!("Error loading cargo config: {}", e);
+            println_stderr!("Error loading cargo config: {}", e);
             None
         }
     }
@@ -187,8 +198,8 @@ fn main() {
             if let Some(token) = get_default_api_token() {
                 token
             } else {
-                println!("No token found in cargo config. Please run cargo login or use the \
-                          --token flag.");
+                println_stderr!("No token found in cargo config. Please run cargo login or use \
+                                 the --token flag.");
                 process::exit(0);
             }
         }
