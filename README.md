@@ -68,3 +68,12 @@ To print JSON:
 $ cargo show --json serde | cut -b '1-120'
 {"crate":{"created_at":"2014-12-05T20:20:39Z","description":"A generic serialization/deserialization framework","documen
 ```
+
+To rename the command if you're used to other package managers:
+
+```
+$ cd /usr/local/bin/  # or someplace in path
+$ ln $(which cargo-show) cargo-flizblorp  # needs to be a hardlink
+$ cargo --list | grep fliz
+    flizblorp
+```
