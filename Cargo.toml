@@ -1,9 +1,11 @@
 [package]
 authors = ["Greg Guthe <greg.guthe@gmail.com>"]
+description = "Prints package metadata like pip show, apt-cache show, npm view, gem query, etc."
 keywords = ["cargo", "cargo-subcommand", "cli", "dependencies", "crates"]
 license = "Apache-2.0/MIT"
 name = "cargo-show"
 readme = "README.md"
+repository = "https://github.com/g-k/cargo-show"
 version = "0.1.0"
 
 [[bin]]
@@ -13,8 +15,5 @@ path = "src/main.rs"
 [dependencies]
 cargo = "0.9.0"
 docopt = "0.6.78"
+g-k-crates-io-client = "0.1.0"
 rustc-serialize = "0.3.18"
-
-[dependencies.crates-io]
-optional = false
-path = "cargo/src/crates-io/"
