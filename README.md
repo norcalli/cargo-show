@@ -4,11 +4,31 @@
 
 Prints package metadata like pip show, apt-cache show, npm view, gem query, etc.
 
+To install:
+
+```
+$ cargo install cargo-show
+    Updating registry `https://github.com/rust-lang/crates.io-index`
+ Downloading cargo-show v0.1.0
+   Compiling winapi-build v0.1.1
+   Compiling rustc-serialize v0.3.18
+   Compiling pkg-config v0.3.8
+   Compiling strsim v0.3.0
+... 
+grab a cup of coffee 
+...
+contemplate life
+...
+more coffee
+...
+Installing /Users/greg/.multirust/toolchains/stable/cargo/bin/cargo-show
+$
+```
+
 Usage:
 
 ```sh
-$ cargo run show -- --help
-     Running `target/debug/cargo-show show serde docopt`
+$ cargo show --help
 Usage:
     cargo show [options] <crate-name>...
     cargo show (-h|--help)
@@ -21,33 +41,23 @@ Options:
     --version               Show version.
 
 Display a metadata for a create at crates.io.
-$ cargo run show -- serde docopt
-     Running `target/debug/cargo-show show serde docopt`
+
+$ cargo show webrender servo
+Error fetching data for webrender: cannot find crate
 ---
-id: serde
-name: serde
-description: A generic serialization/deserialization framework
-documentation: https://serde-rs.github.io/serde/serde/serde/index.html
+id: servo
+name: servo
+description: Parked non-servo thing
+documentation: None
 homepage: None
-repository: https://github.com/serde-rs/serde
-max_version: 0.7.0
-downloads: 184449
-license: MIT/Apache-2.0
-created: 2014-12-05T20:20:39Z
-updated: 2016-02-27T05:29:34Z
----
-id: docopt
-name: docopt
-description: Command line argument parsing.
-documentation: http://burntsushi.net/rustdoc/docopt/
-homepage: https://github.com/docopt/docopt.rs
-repository: https://github.com/docopt/docopt.rs
-max_version: 0.6.78
-downloads: 134241
-license: Unlicense/MIT
-created: 2014-11-20T22:44:11Z
-updated: 2015-12-16T00:01:56Z
- $ cargo run show -- --json serde | cut -b '1-120'
-     Running `target/debug/cargo-show show --json serde`
+repository: None
+max_version: 0.0.1
+downloads: 336
+license: MPL-2.0
+created: 2014-12-04T23:41:05Z
+updated: 2015-12-11T23:55:55Z
+
+$ # Dump raw JSON
+$ cargo show --json serde | cut -b '1-120'
 {"crate":{"created_at":"2014-12-05T20:20:39Z","description":"A generic serialization/deserialization framework","documen
 ```
