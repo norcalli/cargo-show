@@ -143,11 +143,12 @@ fn print_crate_metadata(crate_name: &str, token: &str, as_json: bool) {
             }
 
             if let Some(crate_json) = get_crate_json(crate_name, &*data) {
-                let crate_: CrateMetadata = json::decode(&*crate_json)
-                                                .ok()
-                                                .expect("Unable to decode JSON to CrateMetadata.");
+                let crate_meta: CrateMetadata = json::decode(&*crate_json)
+                                                    .ok()
+                                                    .expect("Unable to decode JSON to \
+                                                             CrateMetadata.");
 
-                print!("{}", crate_);
+                print!("{}", crate_meta);
             }
         }
         Err(e) => {
