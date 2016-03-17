@@ -1,5 +1,6 @@
 ## cargo-show
 
+[![crates.io version](https://img.shields.io/crates/v/cargo-show.svg)](https://img.shields.io/crates/v/cargo-show.svg)
 [![Build Status](https://travis-ci.org/g-k/cargo-show.svg?branch=master)](https://travis-ci.org/g-k/cargo-show)
 
 Prints package metadata like pip show, apt-cache show, npm view, gem query, etc.
