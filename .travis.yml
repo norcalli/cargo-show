@@ -6,7 +6,3 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
-before_install:
-  - sudo add-apt-repository --yes ppa:kalakris/cmake
-  - sudo apt-get -qq update
-  - sudo apt-get install -y cmake
