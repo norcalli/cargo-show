@@ -11,13 +11,17 @@ To install:
 ```
 $ cargo install cargo-show
     Updating registry `https://github.com/rust-lang/crates.io-index`
- Downloading cargo-show v0.1.0
+  Installing cargo-show v0.3.0
+   Compiling glob v0.2.11
+   Compiling num-traits v0.1.37
    Compiling winapi-build v0.1.1
-   Compiling rustc-serialize v0.3.18
-   Compiling pkg-config v0.3.8
-   Compiling strsim v0.3.0
 ...
-Installing /Users/greg/.multirust/toolchains/stable/cargo/bin/cargo-show
+
+   Compiling cargo v0.17.0
+   Compiling docopt v0.7.0
+   Compiling cargo-show v0.3.0
+    Finished release [optimized] target(s) in 312.4 secs
+  Installing /Users/greg/.cargo/bin/cargo-show
 $
 ```
 
@@ -52,7 +56,7 @@ documentation: None
 homepage: None
 repository: None
 max_version: 0.0.1
-downloads: 336
+downloads: 925
 license: MPL-2.0
 created: 2014-12-04T23:41:05Z
 updated: 2015-12-11T23:55:55Z
@@ -60,9 +64,9 @@ updated: 2015-12-11T23:55:55Z
 
 To print JSON:
 
-``` 
+```
 $ cargo show --json serde | cut -b '1-120'
-{"crate":{"created_at":"2014-12-05T20:20:39Z","description":"A generic serialization/deserialization framework","documen
+{"categories":[{"category":"Encoding","crates_cnt":18,"created_at":"2017-01-17T19:13:05Z","description":"Encoding and/or
 ```
 
 To rename the command if you're used to other package managers:
