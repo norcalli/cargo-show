@@ -76,3 +76,7 @@ $ ln $(which cargo-show) cargo-flizblorp  # needs to be a hardlink
 $ cargo --list | grep fliz
     flizblorp
 ```
+
+### Contributors
+
+[@leoschwarz](https://github.com/leoschwarz)

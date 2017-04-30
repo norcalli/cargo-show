@@ -60,6 +60,10 @@ To rename the command if you're used to other package managers:
 \$ cargo --list | grep fliz
     flizblorp
 \`\`\`
+
+### Contributors
+
+[@leoschwarz](https://github.com/leoschwarz)
 EOF
 
 
