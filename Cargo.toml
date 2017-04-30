@@ -15,5 +15,5 @@ path = "src/main.rs"
 [dependencies]
 cargo = "0.18.0"
 docopt = "0.7.0"
-g-k-crates-io-client = "0.8.0"
+g-k-crates-io-client = "0.8.1"
 rustc-serialize = "0.3"
