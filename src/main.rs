@@ -35,7 +35,6 @@ Usage:
     cargo show --version
 
 Options:
-    --token=<token>         Use this crates.io API token.
     --json                  Print the JSON response.
     -h --help               Show this help page.
     --version               Show version.
@@ -49,8 +48,6 @@ Display a metadata for a create at crates.io.
 struct Args {
     /// `crate-name`
     arg_crate_name: Vec<String>,
-    /// `--token`
-    flag_token: Option<String>,
     /// `--version`
     flag_version: bool,
     /// `--json`
@@ -114,8 +111,8 @@ created: {created_at}
 }
 
 /// fetches and prints package metadata from crates.io
-fn print_crate_metadata(crate_name: &str, token: &str, as_json: bool) {
-    let mut reg = crates_io::Registry::new(DEFAULT.to_string(), Some(token.to_owned()));
+fn print_crate_metadata(crate_name: &str, as_json: bool) {
+    let mut reg = crates_io::Registry::new(DEFAULT.to_string(), None);
 
     fn get_crate_json(crate_name: &str, body: &str) -> Option<String> {
         match json::Json::from_str(body) {
@@ -158,31 +155,6 @@ fn print_crate_metadata(crate_name: &str, token: &str, as_json: bool) {
     }
 }
 
-/// reads the rustacean's crates.io API token
-fn get_default_api_token() -> Option<String> {
-    match cargo::util::config::Config::default() {
-        Ok(config) => {
-            match config.get_string("registry.token") {
-                Ok(Some(token)) => Some(token.val),
-                Err(e) => {
-                    println_stderr!("Error reading token from cargo config: {}", e);
-                    None
-                }
-                Ok(None) => {
-                    println_stderr!("No token found in cargo config. Please run cargo login or \
-                                     use the --token flag.");
-                    None
-                }
-            }
-        }
-        Err(e) => {
-            println_stderr!("Error loading cargo config: {}", e);
-            None
-        }
-    }
-}
-
-
 fn main() {
     let args = docopt::Docopt::new(USAGE)
                    .and_then(|d| d.decode::<Args>())
@@ -193,20 +165,7 @@ fn main() {
         process::exit(0);
     }
 
-    let token = match args.flag_token {
-        Some(token) => token,
-        None => {
-            if let Some(token) = get_default_api_token() {
-                token
-            } else {
-                println_stderr!("No token found in cargo config. Please run cargo login or use \
-                                 the --token flag.");
-                process::exit(0);
-            }
-        }
-    };
-
     for crate_name in &args.arg_crate_name {
-        print_crate_metadata(crate_name, &*token, args.flag_json);
+        print_crate_metadata(crate_name, args.flag_json);
     }
 }
