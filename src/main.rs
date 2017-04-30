@@ -6,7 +6,6 @@
 #![deny(trivial_casts, trivial_numeric_casts, unsafe_code)]
 #![deny(unstable_features, unused_qualifications)]
 
-extern crate cargo;
 extern crate g_k_crates_io_client as crates_io;
 extern crate docopt;
 extern crate rustc_serialize;

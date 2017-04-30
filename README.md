@@ -35,7 +35,6 @@ Usage:
     cargo show --version
 
 Options:
-    --token=<token>         Use this crates.io API token.
     --json                  Print the JSON response.
     -h --help               Show this help page.
     --version               Show version.
