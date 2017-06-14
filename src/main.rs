@@ -1,19 +1,25 @@
 
 //! `cargo show`
 
-// these are broken over many line to make rustfmt happy
-#![deny(missing_docs, missing_debug_implementations, missing_copy_implementations)]
-#![deny(trivial_casts, trivial_numeric_casts, unsafe_code)]
-#![deny(unstable_features, unused_qualifications)]
+#![deny(missing_docs,
+        missing_debug_implementations,
+        missing_copy_implementations,
+        trivial_casts,
+        trivial_numeric_casts,
+        unsafe_code,
+        unused_qualifications,
+        unstable_features
+)]
 
 extern crate g_k_crates_io_client as crates_io;
 extern crate docopt;
-extern crate rustc_serialize;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
 use std::fmt;
 use std::process;
 use std::io::Write;
-use rustc_serialize::json;
 
 // from: http://stackoverflow.com/a/27590832
 macro_rules! println_stderr(
@@ -43,7 +49,7 @@ Display a metadata for a create at crates.io.
 
 
 /// Docopt input args.
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     /// `crate-name`
     arg_crate_name: Vec<String>,
@@ -54,7 +60,7 @@ struct Args {
 }
 
 /// crate metadata to print
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CrateMetadata {
     // in response.crate
     created_at: String,
@@ -72,12 +78,16 @@ pub struct CrateMetadata {
     versions: Vec<u64>, // also top level keywords and versions arrays of objects
 }
 
+/// crate metadata HTTP response
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CrateMetaResponse {
+    #[serde(rename="crate")]
+    crate_data: CrateMetadata
+}
+
 
 impl fmt::Display for CrateMetadata {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-
-
-
         write!(f,
                "---
 id: {id}
@@ -113,16 +123,11 @@ created: {created_at}
 fn print_crate_metadata(crate_name: &str, as_json: bool) {
     let mut reg = crates_io::Registry::new(DEFAULT.to_string(), None);
 
-    fn get_crate_json(crate_name: &str, body: &str) -> Option<String> {
-        match json::Json::from_str(body) {
+    fn get_crate_metadata(crate_name: &str, body: &str) -> Option<CrateMetadata> {
+        let resp_json: Result<CrateMetaResponse, _> = serde_json::from_str(body);
+        match resp_json {
             Ok(data) => {
-                if let Some(crate_json) = data.as_object().and_then(|j| j.get("crate")) {
-                    // the entire object was decoded so encoding a part of it should be fine
-                    json::encode(crate_json).ok()
-                } else {
-                    println_stderr!("No 'crate' field found in JSON data for {}.", crate_name);
-                    None
-                }
+                Some(data.crate_data)
             }
             Err(e) => {
                 println_stderr!("Error parsing JSON data for {}: {}", crate_name, e);
@@ -138,13 +143,9 @@ fn print_crate_metadata(crate_name: &str, as_json: bool) {
                 return ();
             }
 
-            if let Some(crate_json) = get_crate_json(crate_name, &*data) {
-                let crate_meta: CrateMetadata = json::decode(&*crate_json)
-                                                    .ok()
-                                                    .expect("Unable to decode JSON to \
-                                                             CrateMetadata.");
-
-                print!("{}", crate_meta);
+            match get_crate_metadata(crate_name, &*data) {
+                Some(crate_meta) => print!("{}", crate_meta),
+                None => {}
             }
         }
         Err(e) => {
@@ -156,7 +157,7 @@ fn print_crate_metadata(crate_name: &str, as_json: bool) {
 
 fn main() {
     let args = docopt::Docopt::new(USAGE)
-                   .and_then(|d| d.decode::<Args>())
+                   .and_then(|d| d.deserialize::<Args>())
                    .unwrap_or_else(|err| err.exit());
 
     if args.flag_version {
