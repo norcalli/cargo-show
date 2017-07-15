@@ -11,16 +11,14 @@ To install:
 ```sh
 $ cargo install cargo-show
     Updating registry `https://github.com/rust-lang/crates.io-index`
- Downloading cargo-show v0.4.0
-  Installing cargo-show v0.4.0
-   Compiling utf8-ranges v1.0.0
+  Installing cargo-show v0.5.0
+   Compiling percent-encoding v1.0.0
    Compiling strsim v0.6.0
-   Compiling libc v0.2.22
+   Compiling quote v0.3.15
 ...
-
-   Compiling g-k-crates-io-client v0.8.1
-   Compiling cargo-show v0.4.0
-    Finished release [optimized] target(s) in 94.37 secs
+   Compiling docopt v0.8.1
+   Compiling cargo-show v0.5.0
+    Finished release [optimized] target(s) in 104.96 secs
   Installing /Users/greg/.cargo/bin/cargo-show
 $
 ```
@@ -55,7 +53,7 @@ documentation: None
 homepage: None
 repository: None
 max_version: 0.0.1
-downloads: 966
+downloads: 1060
 license: MPL-2.0
 created: 2014-12-04T23:41:05Z
 updated: 2015-12-11T23:55:55Z
@@ -65,7 +63,7 @@ To print JSON:
 
 ```json
 $ cargo show --json serde | cut -b '1-120'
-{"categories":[{"category":"Encoding","crates_cnt":42,"created_at":"2017-01-17T19:13:05Z","description":"Encoding and/or
+{"crate":{"id":"serde","name":"serde","updated_at":"2017-07-12T04:20:29Z","versions":[59405,58325,54218,53794,53565,5330
 ```
 
 To rename the command if you're used to other package managers:
