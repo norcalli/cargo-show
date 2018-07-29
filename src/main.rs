@@ -85,6 +85,8 @@ pub struct CrateDependency {
     #[serde(rename="crate_id")]
     id: String,
     req: String,
+	kind: String,
+	optional: bool,
     // ...
 }
 
@@ -128,7 +130,17 @@ created: {created_at}
 
 impl fmt::Display for CrateDependency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} {}", self.id, self.req)
+		write!(f, "{} {}", self.id, self.req)?;
+		let isdev = self.kind != "normal";
+		let isopt = self.optional;
+		if isdev || isopt {
+			write!(f, " (")?;
+			if isdev { write!(f, "{}", self.kind)?; }
+			if isdev && isopt { write!(f, ", ")?; }
+			if isopt { write!(f, "opt")?; }
+			write!(f, ")")?;
+		}
+		Ok(())
     }
 }
 
