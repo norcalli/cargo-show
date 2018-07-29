@@ -3,6 +3,8 @@
 ## Helper script to run cargo show and update the README.md
 # run from project root
 
+cargo install --force cargo-show 2>&1 > /tmp/cargo-show-install.log
+
 cat > README.md <<EOF
 ## cargo-show
 
@@ -16,18 +18,9 @@ To install:
 
 \`\`\`sh
 \$ cargo install cargo-show
-    Updating registry \`https://github.com/rust-lang/crates.io-index\`
- Downloading cargo-show v0.4.0
-  Installing cargo-show v0.4.0
-   Compiling utf8-ranges v1.0.0
-   Compiling strsim v0.6.0
-   Compiling libc v0.2.22
+$(head -n5 | /tmp/cargo-show-install.log)
 ...
-
-   Compiling g-k-crates-io-client v0.8.1
-   Compiling cargo-show v0.4.0
-    Finished release [optimized] target(s) in 94.37 secs
-  Installing /Users/greg/.cargo/bin/cargo-show
+$(tail -n5 /tmp/cargo-show-install.log)
 \$
 \`\`\`
 
@@ -52,6 +45,13 @@ To print JSON:
 $(cargo show --json serde | cut -b '1-120')
 \`\`\`
 
+To print package metadata and direct dependencies:
+
+\`\`\`sh
+\$ cargo show --dependencies time
+$(cargo show --dependencies time 2>&1)
+\`\`\`
+
 To rename the command if you're used to other package managers:
 
 \`\`\`sh
@@ -67,6 +67,7 @@ To rename the command if you're used to other package managers:
 * [@pravic](https://github.com/pravic)
 EOF
 
+rm /tmp/cargo-show-install.log
 
 ## if the readme changed cargo-show is broken or metadata from the
 ## example crates changed
