@@ -11,14 +11,14 @@ To install:
 ```sh
 $ cargo install cargo-show
     Updating registry `https://github.com/rust-lang/crates.io-index`
- Downloading cargo-show v0.5.2
-  Installing cargo-show v0.5.2
+ Downloading cargo-show v0.5.3
+  Installing cargo-show v0.5.3
    Compiling unicode-xid v0.0.4
    Compiling cc v1.0.18
 ...
    Compiling g-k-crates-io-client v0.16.0
    Compiling docopt v0.8.3
-   Compiling cargo-show v0.5.2
+   Compiling cargo-show v0.5.3
     Finished release [optimized] target(s) in 2m 33.31s
   Installing /Users/greg/.cargo/bin/cargo-show
 $
