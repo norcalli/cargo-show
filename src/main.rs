@@ -31,7 +31,7 @@ Usage:
 
 Options:
     --json                  Print the JSON response.
-    --dependencies          Print the crate's dependencies as well.
+    -L --dependencies       Print the crate's dependencies as well.
     -h --help               Show this help page.
     --version               Show version.
 
@@ -157,7 +157,10 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
     let meta = meta?.crate_data;
 
     if as_json && with_deps {
-        return Err(String::from("Error: JSON formatting for dependencies is not implemented. See: https://github.com/g-k/cargo-show/issues/17"));
+        let response = req.get_crate_dependencies(&meta.id, &meta.max_version)
+            .map_err(|e| format!("Error fetching dependencies for {}: {}", crate_name, e))?;
+				println!("{}", response);
+				return Ok(());
     }
 
     if as_json {
