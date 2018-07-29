@@ -144,6 +144,10 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
 
     let meta = meta?.crate_data;
 
+    if as_json && with_deps {
+        return Err(String::from("Error: JSON formatting for dependencies is not implemented. See: https://github.com/g-k/cargo-show/issues/17"));
+    }
+
     if as_json {
         println!("{}", meta);
         return Ok(());
