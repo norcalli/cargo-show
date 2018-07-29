@@ -19,17 +19,7 @@ extern crate serde_derive;
 
 use std::fmt;
 use std::process;
-use std::io::Write;
 
-// from: http://stackoverflow.com/a/27590832
-macro_rules! println_stderr(
-    ($($arg:tt)*) => (
-        match writeln!(&mut ::std::io::stderr(), $($arg)* ) {
-            Ok(_) => {},
-            Err(x) => panic!("Unable to write to stderr: {}", x),
-        }
-    )
-);
 
 static DEFAULT: &'static str = "https://crates.io/";
 
@@ -41,6 +31,7 @@ Usage:
 
 Options:
     --json                  Print the JSON response.
+    --dependencies          Print the crate's dependencies as well.
     -h --help               Show this help page.
     --version               Show version.
 
@@ -57,6 +48,8 @@ struct Args {
     flag_version: bool,
     /// `--json`
     flag_json: bool,
+    /// `--dependencies`
+    flag_dependencies: bool,
 }
 
 /// crate metadata to print
@@ -85,6 +78,21 @@ pub struct CrateMetaResponse {
     crate_data: CrateMetadata
 }
 
+/// crate dependency
+#[derive(Debug, Deserialize)]
+pub struct CrateDependency {
+    // in response.dependencies
+    #[serde(rename="crate_id")]
+    id: String,
+    req: String,
+    // ...
+}
+
+/// crate dependencies HTTP response
+#[derive(Debug, Deserialize)]
+pub struct CrateDependencyResponse {
+    dependencies: Vec<CrateDependency>,
+}
 
 impl fmt::Display for CrateMetadata {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -103,8 +111,7 @@ downloads: {downloads}
 license: {license}
 created: {created_at}
 \
-                updated: {updated_at}
-",
+                updated: {updated_at}",
                id = self.id,
                name = self.name,
                description = self.description.as_ref().unwrap_or(&"None".to_owned()),
@@ -119,40 +126,49 @@ created: {created_at}
     }
 }
 
+impl fmt::Display for CrateDependency {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {}", self.id, self.req)
+    }
+}
+
 /// fetches and prints package metadata from crates.io
-fn print_crate_metadata(crate_name: &str, as_json: bool) {
-    let mut reg = crates_io::Registry::new(DEFAULT.to_string(), None);
+fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Result<(), String> {
+    let mut req = crates_io::Registry::new(DEFAULT.to_string(), None);
 
-    fn get_crate_metadata(crate_name: &str, body: &str) -> Option<CrateMetadata> {
-        let resp_json: Result<CrateMetaResponse, _> = serde_json::from_str(body);
-        match resp_json {
-            Ok(data) => {
-                Some(data.crate_data)
-            }
-            Err(e) => {
-                println_stderr!("Error parsing JSON data for {}: {}", crate_name, e);
-                None
-            }
-        }
+    let response = req.get_crate_data(crate_name)
+        .map_err(|e| format!("Error fetching data for {}: {}", crate_name, e))?;
+
+    let meta: Result<CrateMetaResponse, _> = serde_json::from_str(&response)
+        .map_err(|e| format!("Error parsing JSON data for {}: {}", crate_name, e));
+
+    let meta = meta?.crate_data;
+
+    if as_json {
+        println!("{}", meta);
+        return Ok(());
     }
 
-    match reg.get_crate_data(crate_name) {
-        Ok(data) => {
-            if as_json {
-                println!("{}", data);
-                return ();
-            }
+    // print crate's metadata
+    println!("{}", meta);
 
-            match get_crate_metadata(crate_name, &*data) {
-                Some(crate_meta) => print!("{}", crate_meta),
-                None => {}
-            }
-        }
-        Err(e) => {
-            // e.g. crate name not found
-            println_stderr!("Error fetching data for {}: {}", crate_name, e);
+    if with_deps {
+        println!("dependencies:");
+
+        let response = req.get_crate_dependencies(&meta.id, &meta.max_version)
+            .map_err(|e| format!("Error fetching dependencies for {}: {}", crate_name, e))?;
+
+        let deps: Result<CrateDependencyResponse, _> = serde_json::from_str(&response)
+            .map_err(|e| format!("Error patcing JSON dependencies for {}: {}", crate_name, e));
+
+        let deps = deps?.dependencies;
+        for dependency in deps {
+            println!("{}", dependency);
         }
     }
+    println!();
+
+    Ok(())
 }
 
 fn main() {
@@ -166,6 +182,9 @@ fn main() {
     }
 
     for crate_name in &args.arg_crate_name {
-        print_crate_metadata(crate_name, args.flag_json);
+        let r = print_crate_metadata(crate_name, args.flag_json, args.flag_dependencies);
+        if let Err(e) = r {
+            eprintln!("{}", e);
+        }
     }
 }
