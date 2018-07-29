@@ -166,7 +166,6 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
             println!("{}", dependency);
         }
     }
-    println!();
 
     Ok(())
 }
