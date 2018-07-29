@@ -3,7 +3,8 @@
 ## Helper script to run cargo show and update the README.md
 # run from project root
 
-cargo install --force cargo-show 2>&1 > /tmp/cargo-show-install.log
+cargo uninstall cargo-show || true
+cargo install cargo-show &> ./cargo-show-install.log
 
 cat > README.md <<EOF
 ## cargo-show
@@ -18,9 +19,9 @@ To install:
 
 \`\`\`sh
 \$ cargo install cargo-show
-$(head -n5 | /tmp/cargo-show-install.log)
+$(head -n5 ./cargo-show-install.log)
 ...
-$(tail -n5 /tmp/cargo-show-install.log)
+$(tail -n5 ./cargo-show-install.log)
 \$
 \`\`\`
 
@@ -67,7 +68,7 @@ To rename the command if you're used to other package managers:
 * [@pravic](https://github.com/pravic)
 EOF
 
-rm /tmp/cargo-show-install.log
+rm ./cargo-show-install.log
 
 ## if the readme changed cargo-show is broken or metadata from the
 ## example crates changed
