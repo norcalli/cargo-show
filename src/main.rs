@@ -149,7 +149,7 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
     }
 
     if as_json {
-        println!("{}", meta);
+        println!("{}", response);
         return Ok(());
     }
 
