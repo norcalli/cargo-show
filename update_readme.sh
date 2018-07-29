@@ -63,7 +63,8 @@ To rename the command if you're used to other package managers:
 
 ### Contributors
 
-[@leoschwarz](https://github.com/leoschwarz)
+* [@leoschwarz](https://github.com/leoschwarz)
+* [@pravic](https://github.com/pravic)
 EOF
 
 
