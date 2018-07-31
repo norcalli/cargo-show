@@ -13,13 +13,14 @@ $ cargo install cargo-show
     Updating registry `https://github.com/rust-lang/crates.io-index`
  Downloading cargo-show v0.5.3
   Installing cargo-show v0.5.3
-   Compiling unicode-xid v0.0.4
    Compiling cc v1.0.18
+   Compiling pkg-config v0.3.12
+   Compiling unicode-xid v0.0.4
 ...
    Compiling g-k-crates-io-client v0.16.0
    Compiling docopt v0.8.3
    Compiling cargo-show v0.5.3
-    Finished release [optimized] target(s) in 2m 33.31s
+    Finished release [optimized] target(s) in 3m 27.44s
   Installing /Users/greg/.cargo/bin/cargo-show
 $
 ```
@@ -35,7 +36,7 @@ Usage:
 
 Options:
     --json                  Print the JSON response.
-    --dependencies          Print the crate's dependencies as well.
+    -L --dependencies       Print the crate's dependencies as well.
     -h --help               Show this help page.
     --version               Show version.
 
@@ -55,7 +56,7 @@ documentation: None
 homepage: None
 repository: None
 max_version: 0.0.1
-downloads: 1274
+downloads: 1276
 license: None
 created: 2014-12-04T23:41:05.915728+00:00
 updated: 2015-12-11T23:55:55.315022+00:00
@@ -68,7 +69,7 @@ $ cargo show --json serde | cut -b '1-120'
 {"crate":{"id":"serde","name":"serde","updated_at":"2018-07-07T03:21:52.415378+00:00","versions":[98987,98381,98173,9801
 ```
 
-To print package metadata and direct dependencies:
+To print package metadata and direct dependencies (alternatively use `-L`):
 
 ```sh
 $ cargo show --dependencies time
@@ -81,18 +82,51 @@ documentation: https://doc.rust-lang.org/time
 homepage: https://github.com/rust-lang/time
 repository: https://github.com/rust-lang/time
 max_version: 0.1.40
-downloads: 3999520
+downloads: 4010914
 license: None
 created: 2014-11-13T06:52:51.369245+00:00
 updated: 2018-05-10T19:25:59.151982+00:00
 dependencies:
 libc ^0.2.1
-log ^0.4
+log ^0.4 (dev)
 redox_syscall ^0.1
 winapi ^0.3.0
-winapi ^0.3.0
-rustc-serialize ^0.3
+winapi ^0.3.0 (dev)
+rustc-serialize ^0.3 (opt)
 ```
+
+
+To print package metadata and direct dependencies as JSON:
+
+```sh
+$ cargo show --dependencies --json time | python -m json.tool | head -n25
+{
+    "dependencies": [
+        {
+            "crate_id": "libc",
+            "default_features": true,
+            "downloads": 0,
+            "features": [],
+            "id": 414415,
+            "kind": "normal",
+            "optional": false,
+            "req": "^0.2.1",
+            "target": null,
+            "version_id": 92243
+        },
+        {
+            "crate_id": "log",
+            "default_features": true,
+            "downloads": 0,
+            "features": [],
+            "id": 414417,
+            "kind": "dev",
+            "optional": false,
+            "req": "^0.4",
+            "target": null,
+            "version_id": 92243
+```
+
 
 To rename the command if you're used to other package managers:
 
