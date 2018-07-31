@@ -3,6 +3,8 @@
 ## Helper script to run cargo show and update the README.md
 # run from project root
 
+# "cargo run show" for development or "cargo show" for a published version
+CARGO_CMD="cargo run show"
 cargo uninstall cargo-show || true
 cargo install cargo-show &> ./cargo-show-install.log
 
@@ -29,36 +31,36 @@ Usage:
 
 \`\`\`sh
 \$ cargo show --help
-$(cargo show --help)
+$($CARGO_CMD --help)
 \`\`\`
 
 To print package metadata:
 
 \`\`\`sh
 \$ cargo show webrender servo
-$(cargo show webrender servo 2>&1)
+$($CARGO_CMD webrender servo 2>&1)
 \`\`\`
 
 To print JSON:
 
 \`\`\`json
 \$ cargo show --json serde | cut -b '1-120'
-$(cargo show --json serde | cut -b '1-120')
+$($CARGO_CMD --json serde | cut -b '1-120')
 \`\`\`
 
 To print package metadata and direct dependencies (alternatively use `-L`):
 
 \`\`\`sh
 \$ cargo show --dependencies time
-$(cargo show --dependencies time 2>&1)
+$($CARGO_CMD --dependencies time 2>&1)
 \`\`\`
 
 
 To print package metadata and direct dependencies as JSON:
 
 \`\`\`sh
-\$ cargo show --dependencies --json time
-$(cargo show --dependencies time 2>&1)
+\$ cargo show --dependencies --json time | python -m json.tool | head -n25
+$($CARGO_CMD --dependencies --json time 2>&1 | python -m json.tool | head -n25)
 \`\`\`
 
 
