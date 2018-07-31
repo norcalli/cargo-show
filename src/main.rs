@@ -1,25 +1,18 @@
-
 //! `cargo show`
 
-#![deny(missing_docs,
-        missing_debug_implementations,
-        missing_copy_implementations,
-        trivial_casts,
-        trivial_numeric_casts,
-        unsafe_code,
-        unused_qualifications,
-        unstable_features
+#![deny(
+    missing_docs, missing_debug_implementations, missing_copy_implementations, trivial_casts,
+    trivial_numeric_casts, unsafe_code, unused_qualifications, unstable_features
 )]
 
-extern crate g_k_crates_io_client as crates_io;
 extern crate docopt;
+extern crate g_k_crates_io_client as crates_io;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
 use std::fmt;
 use std::process;
-
 
 static DEFAULT: &'static str = "https://crates.io/";
 
@@ -37,7 +30,6 @@ Options:
 
 Display a metadata for a create at crates.io.
 ";
-
 
 /// Docopt input args.
 #[derive(Debug, Deserialize)]
@@ -74,19 +66,19 @@ pub struct CrateMetadata {
 /// crate metadata HTTP response
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CrateMetaResponse {
-    #[serde(rename="crate")]
-    crate_data: CrateMetadata
+    #[serde(rename = "crate")]
+    crate_data: CrateMetadata,
 }
 
 /// crate dependency
 #[derive(Debug, Deserialize)]
 pub struct CrateDependency {
     // in response.dependencies
-    #[serde(rename="crate_id")]
+    #[serde(rename = "crate_id")]
     id: String,
     req: String,
-	kind: String,
-	optional: bool,
+    kind: String,
+    optional: bool,
     // ...
 }
 
@@ -98,8 +90,9 @@ pub struct CrateDependencyResponse {
 
 impl fmt::Display for CrateMetadata {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "---
+        write!(
+            f,
+            "---
 id: {id}
 name: {name}
 description: {description}
@@ -114,33 +107,40 @@ license: {license}
 created: {created_at}
 \
                 updated: {updated_at}",
-               id = self.id,
-               name = self.name,
-               description = self.description.as_ref().unwrap_or(&"None".to_owned()),
-               documentation = self.documentation.as_ref().unwrap_or(&"None".to_owned()),
-               max_version = self.max_version,
-               downloads = self.downloads,
-               license = self.license.as_ref().unwrap_or(&"None".to_owned()),
-               homepage = self.homepage.as_ref().unwrap_or(&"None".to_owned()),
-               repository = self.repository.as_ref().unwrap_or(&"None".to_owned()),
-               created_at = self.created_at,
-               updated_at = self.updated_at)
+            id = self.id,
+            name = self.name,
+            description = self.description.as_ref().unwrap_or(&"None".to_owned()),
+            documentation = self.documentation.as_ref().unwrap_or(&"None".to_owned()),
+            max_version = self.max_version,
+            downloads = self.downloads,
+            license = self.license.as_ref().unwrap_or(&"None".to_owned()),
+            homepage = self.homepage.as_ref().unwrap_or(&"None".to_owned()),
+            repository = self.repository.as_ref().unwrap_or(&"None".to_owned()),
+            created_at = self.created_at,
+            updated_at = self.updated_at
+        )
     }
 }
 
 impl fmt::Display for CrateDependency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{} {}", self.id, self.req)?;
-		let isdev = self.kind != "normal";
-		let isopt = self.optional;
-		if isdev || isopt {
-			write!(f, " (")?;
-			if isdev { write!(f, "{}", self.kind)?; }
-			if isdev && isopt { write!(f, ", ")?; }
-			if isopt { write!(f, "opt")?; }
-			write!(f, ")")?;
-		}
-		Ok(())
+        write!(f, "{} {}", self.id, self.req)?;
+        let isdev = self.kind != "normal";
+        let isopt = self.optional;
+        if isdev || isopt {
+            write!(f, " (")?;
+            if isdev {
+                write!(f, "{}", self.kind)?;
+            }
+            if isdev && isopt {
+                write!(f, ", ")?;
+            }
+            if isopt {
+                write!(f, "opt")?;
+            }
+            write!(f, ")")?;
+        }
+        Ok(())
     }
 }
 
@@ -159,8 +159,8 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
     if as_json && with_deps {
         let response = req.get_crate_dependencies(&meta.id, &meta.max_version)
             .map_err(|e| format!("Error fetching dependencies for {}: {}", crate_name, e))?;
-				println!("{}", response);
-				return Ok(());
+        println!("{}", response);
+        return Ok(());
     }
 
     if as_json {
@@ -191,8 +191,8 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
 
 fn main() {
     let args = docopt::Docopt::new(USAGE)
-                   .and_then(|d| d.deserialize::<Args>())
-                   .unwrap_or_else(|err| err.exit());
+        .and_then(|d| d.deserialize::<Args>())
+        .unwrap_or_else(|err| err.exit());
 
     if args.flag_version {
         println!("cargo-show version {}", env!("CARGO_PKG_VERSION"));
