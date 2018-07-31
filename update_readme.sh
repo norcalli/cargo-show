@@ -46,12 +46,21 @@ To print JSON:
 $(cargo show --json serde | cut -b '1-120')
 \`\`\`
 
-To print package metadata and direct dependencies:
+To print package metadata and direct dependencies (alternatively use `-L`):
 
 \`\`\`sh
 \$ cargo show --dependencies time
 $(cargo show --dependencies time 2>&1)
 \`\`\`
+
+
+To print package metadata and direct dependencies as JSON:
+
+\`\`\`sh
+\$ cargo show --dependencies --json time
+$(cargo show --dependencies time 2>&1)
+\`\`\`
+
 
 To rename the command if you're used to other package managers:
 
