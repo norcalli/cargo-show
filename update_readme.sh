@@ -48,7 +48,7 @@ To print JSON:
 $($CARGO_CMD --json serde | cut -b '1-120')
 \`\`\`
 
-To print package metadata and direct dependencies (alternatively use `-L`):
+To print package metadata and direct dependencies (alternatively use \`-L\`):
 
 \`\`\`sh
 \$ cargo show --dependencies time
@@ -60,7 +60,7 @@ To print package metadata and direct dependencies as JSON:
 
 \`\`\`sh
 \$ cargo show --dependencies --json time | python -m json.tool | head -n25
-$($CARGO_CMD --dependencies --json time 2>&1 | python -m json.tool | head -n25)
+$($CARGO_CMD --dependencies --json time | python -m json.tool | head -n25)
 \`\`\`
 
 
