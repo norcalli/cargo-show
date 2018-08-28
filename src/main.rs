@@ -74,12 +74,34 @@ pub struct CrateMetaResponse {
 #[derive(Debug, Deserialize)]
 pub struct CrateDependency {
     // in response.dependencies
+
+    /// The dependent crate's ID.
     #[serde(rename = "crate_id")]
     id: String,
+
+    /// The required version of the dependent crate (semver).
     req: String,
-    kind: String,
+
+    /// The dependency type.
+    ///
+    /// Can be: `normal`, `dev` (examples, tests), `build` (deps required by `build.rs`).
+    kind: CrateDependencyKind,
+
+    /// The dependency is optional.
     optional: bool,
     // ...
+}
+
+/// The dependendy type.
+#[derive(Debug, Deserialize, Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub enum CrateDependencyKind {
+	/// Just a regular dependency library.
+	Normal,
+	/// A dependency used in examples or tests.
+	Dev,
+	/// A dependency used in `build.rs`.
+	Build,
 }
 
 /// crate dependencies HTTP response
@@ -125,7 +147,7 @@ created: {created_at}
 impl fmt::Display for CrateDependency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} {}", self.id, self.req)?;
-        let isdev = self.kind != "normal";
+        let isdev = self.kind != CrateDependencyKind::Normal;
         let isopt = self.optional;
         if isdev || isopt {
             write!(f, " (")?;
@@ -142,6 +164,17 @@ impl fmt::Display for CrateDependency {
         }
         Ok(())
     }
+}
+
+impl fmt::Display for CrateDependencyKind {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let name = match self {
+			CrateDependencyKind::Normal => "normal",
+			CrateDependencyKind::Dev => "dev",
+			CrateDependencyKind::Build => "build",
+		};
+		write!(f, "{}", name)
+	}
 }
 
 /// fetches and prints package metadata from crates.io
@@ -180,7 +213,8 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
         let deps: Result<CrateDependencyResponse, _> = serde_json::from_str(&response)
             .map_err(|e| format!("Error patcing JSON dependencies for {}: {}", crate_name, e));
 
-        let deps = deps?.dependencies;
+        let mut deps = deps?.dependencies;
+        deps.sort_by(|a,b| a.kind.cmp(&b.kind));
         for dependency in deps {
             println!("{}", dependency);
         }
