@@ -73,8 +73,14 @@ To rename the command if you're used to other package managers:
     flizblorp
 \`\`\`
 
+### Maintainers
+
+* [@g-k](https://github.com/g-k)
+* [@pravic](https://github.com/pravic)
+
 ### Contributors
 
+* [@g-k](https://github.com/g-k)
 * [@leoschwarz](https://github.com/leoschwarz)
 * [@pravic](https://github.com/pravic)
 EOF
