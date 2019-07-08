@@ -2,11 +2,12 @@
 authors = ["Greg Guthe <greg.guthe@gmail.com>"]
 description = "Prints package metadata like pip show, apt-cache show, npm view, gem query, etc."
 keywords = ["cargo", "cargo-subcommand", "cli", "dependencies", "crates"]
-license = "Apache-2.0/MIT"
+license = "MIT OR Apache-2.0"
 name = "cargo-show"
 readme = "README.md"
 repository = "https://github.com/g-k/cargo-show"
-version = "0.5.5"
+version = "0.5.6"
+edition = "2018"
 
 [[bin]]
 name = "cargo-show"
@@ -14,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 docopt = "1.0.2"
-g-k-crates-io-client = "0.16"
+g-k-crates-io-client = "0.27"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
