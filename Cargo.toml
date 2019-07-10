@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 docopt = "1.0.2"
-g-k-crates-io-client = "0.16"
+g-k-crates-io-client = { git = "https://github.com/norcalli/g-k-crates-io-client.git" }
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
