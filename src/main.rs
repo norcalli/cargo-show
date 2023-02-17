@@ -1,17 +1,14 @@
 //! `cargo show`
 
-#![deny(
-    missing_docs, missing_debug_implementations, missing_copy_implementations, trivial_casts,
-    trivial_numeric_casts, unsafe_code, unused_qualifications, unstable_features
-)]
-
 extern crate docopt;
 extern crate g_k_crates_io_client as crates_io;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-use std::fmt;
+use itertools::Itertools;
+use std::collections::BTreeMap;
+use std::fmt::{self, Display};
 use std::process;
 
 static DEFAULT: &'static str = "https://crates.io/";
@@ -61,6 +58,10 @@ pub struct CrateMetadata {
     repository: Option<String>,
     updated_at: String,
     versions: Vec<u64>, // also top level keywords and versions arrays of objects
+    #[serde(skip)]
+    features: BTreeMap<String, Vec<String>>,
+    #[serde(skip)]
+    versions_: Vec<String>,
 }
 
 /// crate metadata HTTP response
@@ -68,13 +69,20 @@ pub struct CrateMetadata {
 pub struct CrateMetaResponse {
     #[serde(rename = "crate")]
     crate_data: CrateMetadata,
+    versions: Vec<CrateVersion>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CrateVersion {
+    features: BTreeMap<String, Vec<String>>,
+    #[serde(rename = "num")]
+    version: String,
 }
 
 /// crate dependency
 #[derive(Debug, Deserialize)]
 pub struct CrateDependency {
     // in response.dependencies
-
     /// The dependent crate's ID.
     #[serde(rename = "crate_id")]
     id: String,
@@ -96,12 +104,12 @@ pub struct CrateDependency {
 #[derive(Debug, Deserialize, Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum CrateDependencyKind {
-	/// Just a regular dependency library.
-	Normal,
-	/// A dependency used in examples or tests.
-	Dev,
-	/// A dependency used in `build.rs`.
-	Build,
+    /// Just a regular dependency library.
+    Normal,
+    /// A dependency used in examples or tests.
+    Dev,
+    /// A dependency used in `build.rs`.
+    Build,
 }
 
 /// crate dependencies HTTP response
@@ -112,34 +120,64 @@ pub struct CrateDependencyResponse {
 
 impl fmt::Display for CrateMetadata {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let Self {
+            created_at,
+            description,
+            documentation,
+            downloads,
+            homepage,
+            id,
+            keywords,
+            license,
+            max_version,
+            name,
+            repository,
+            updated_at,
+            versions: _,
+            versions_,
+            features,
+        } = self;
+        let description = description.or_display("None");
+        let documentation = documentation.or_display("None");
+        let license = license.or_display("None");
+        let homepage = homepage.or_display("None");
+        let repository = repository.or_display("None");
+        let keywords = keywords.iter().format(", ");
+        let feat_max_key_len = features.keys().map(|s| s.len()).max().unwrap_or(0);
+        let it = features.keys().chunks(4);
+        let feat = it
+            .into_iter()
+            .map(|chunk| chunk.map(|s| format!("{s:<feat_max_key_len$}")).format(" "))
+            .format("\n          ");
+        let feat_details = features
+            .iter()
+            .map(|(k, v)| format!("  {k:>feat_max_key_len$} = {}", v.iter().format(",")))
+            // .map(|(k, v)| format!("  {k:>feat_max_key_len$} = {v:?}"))
+            .format("\n");
+        let versions = versions_.iter().take(5).format(", ");
+        let def_feat = features
+            .get("default")
+            .map(|s| s.iter().format(","))
+            .into_or_display("--");
         write!(
             f,
-            "---
-id: {id}
-name: {name}
-description: {description}
-documentation: \
-                {documentation}
-homepage: {homepage}
-repository: {repository}
-max_version: \
-                {max_version}
-downloads: {downloads}
-license: {license}
-created: {created_at}
-\
-                updated: {updated_at}",
-            id = self.id,
-            name = self.name,
-            description = self.description.as_ref().unwrap_or(&"None".to_owned()),
-            documentation = self.documentation.as_ref().unwrap_or(&"None".to_owned()),
-            max_version = self.max_version,
-            downloads = self.downloads,
-            license = self.license.as_ref().unwrap_or(&"None".to_owned()),
-            homepage = self.homepage.as_ref().unwrap_or(&"None".to_owned()),
-            repository = self.repository.as_ref().unwrap_or(&"None".to_owned()),
-            created_at = self.created_at,
-            updated_at = self.updated_at
+            "---\n\
+            id: {id}\n\
+            name: {name}\n\
+            description: {description}\n\
+            documentation: {documentation}\n\
+            homepage: {homepage}\n\
+            repository: {repository}\n\
+            max_version: {max_version}\n\
+            latest_versions: {versions}\n\
+            downloads: {downloads}\n\
+            license: {license}\n\
+            created: {created_at}\n\
+            updated: {updated_at}\n\
+            keywords: {keywords}\n\
+            default_features: {def_feat}\n\
+            features: {feat}\n\
+            features_detail:\n{feat_details}",
         )
     }
 }
@@ -167,30 +205,39 @@ impl fmt::Display for CrateDependency {
 }
 
 impl fmt::Display for CrateDependencyKind {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let name = match self {
-			CrateDependencyKind::Normal => "normal",
-			CrateDependencyKind::Dev => "dev",
-			CrateDependencyKind::Build => "build",
-		};
-		write!(f, "{}", name)
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let name = match self {
+            CrateDependencyKind::Normal => "normal",
+            CrateDependencyKind::Dev => "dev",
+            CrateDependencyKind::Build => "build",
+        };
+        write!(f, "{}", name)
+    }
 }
 
 /// fetches and prints package metadata from crates.io
 fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Result<(), String> {
     let mut req = crates_io::Registry::new(DEFAULT.to_string(), None);
 
-    let response = req.get_crate_data(crate_name)
+    let response = req
+        .get_crate_data(crate_name)
         .map_err(|e| format!("Error fetching data for {}: {}", crate_name, e))?;
 
     let meta: Result<CrateMetaResponse, _> = serde_json::from_str(&response)
         .map_err(|e| format!("Error parsing JSON data for {}: {}", crate_name, e));
 
-    let meta = meta?.crate_data;
+    let mut meta = meta?;
+    meta.crate_data
+        .features
+        .clone_from(&meta.versions[0].features);
+    meta.crate_data
+        .versions_
+        .extend(meta.versions.iter().map(|s| s.version.clone()));
+    let crate_data = meta.crate_data;
 
     if as_json && with_deps {
-        let response = req.get_crate_dependencies(&meta.id, &meta.max_version)
+        let response = req
+            .get_crate_dependencies(&crate_data.id, &crate_data.max_version)
             .map_err(|e| format!("Error fetching dependencies for {}: {}", crate_name, e))?;
         println!("{}", response);
         return Ok(());
@@ -202,19 +249,20 @@ fn print_crate_metadata(crate_name: &str, as_json: bool, with_deps: bool) -> Res
     }
 
     // print crate's metadata
-    println!("{}", meta);
+    println!("{}", crate_data);
 
     if with_deps {
         println!("dependencies:");
 
-        let response = req.get_crate_dependencies(&meta.id, &meta.max_version)
+        let response = req
+            .get_crate_dependencies(&crate_data.id, &crate_data.max_version)
             .map_err(|e| format!("Error fetching dependencies for {}: {}", crate_name, e))?;
 
         let deps: Result<CrateDependencyResponse, _> = serde_json::from_str(&response)
             .map_err(|e| format!("Error patcing JSON dependencies for {}: {}", crate_name, e));
 
         let mut deps = deps?.dependencies;
-        deps.sort_by(|a,b| a.kind.cmp(&b.kind));
+        deps.sort_by(|a, b| a.kind.cmp(&b.kind));
         for dependency in deps {
             println!("{}", dependency);
         }
@@ -238,5 +286,32 @@ fn main() {
         if let Err(e) = r {
             eprintln!("{}", e);
         }
+    }
+}
+
+pub struct OrDisplay<T: Display, U>(Option<T>, U);
+
+impl<T: Display, U: Display> Display for OrDisplay<T, U> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match &self.0 {
+            Some(t) => t.fmt(fmt),
+            None => self.1.fmt(fmt),
+        }
+    }
+}
+
+pub trait OrDisplayExt<T: Display> {
+    fn or_display<U: Display>(&self, u: U) -> OrDisplay<&T, U>;
+
+    fn into_or_display<U: Display>(self, u: U) -> OrDisplay<T, U>;
+}
+
+impl<T: Display> OrDisplayExt<T> for Option<T> {
+    fn or_display<U: Display>(&self, u: U) -> OrDisplay<&T, U> {
+        OrDisplay(self.as_ref(), u)
+    }
+
+    fn into_or_display<U: Display>(self, u: U) -> OrDisplay<T, U> {
+        OrDisplay(self, u)
     }
 }
